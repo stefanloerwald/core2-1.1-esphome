@@ -1,0 +1,17 @@
+
+display:
+  - platform: mipi_spi
+    model: ILI9341
+    id: main_display
+    cs_pin: GPIO5
+    dc_pin: GPIO15
+    data_rate: 40MHz
+    invert_colors: true
+    pixel_mode: 18bit
+    dimensions:
+      height: 240
+      width: 320
+    transform:
+      swap_xy: false
+      mirror_x: false
+      mirror_y: false
