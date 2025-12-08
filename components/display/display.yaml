@@ -2,7 +2,7 @@
 display:
   - platform: mipi_spi
     model: ILI9341
-    id: main_display
+    id: ${id}
     cs_pin: GPIO5
     dc_pin: GPIO15
     data_rate: 40MHz
