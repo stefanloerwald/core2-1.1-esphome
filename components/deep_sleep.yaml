@@ -1,0 +1,5 @@
+
+deep_sleep:
+  id: ${id}
+  wakeup_pin: GPIO39
+  wakeup_pin_mode: INVERT_WAKEUP
