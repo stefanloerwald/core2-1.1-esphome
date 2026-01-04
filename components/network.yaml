@@ -9,4 +9,4 @@ wifi:
 mdns:
   # disabled: true
 
-captive_portal:
+# captive_portal:
