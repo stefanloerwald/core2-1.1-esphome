@@ -1,4 +1,9 @@
 
+spi:
+  clk_pin: GPIO18
+  mosi_pin: GPIO23
+  miso_pin: GPIO38
+
 display:
   - platform: mipi_spi
     model: ILI9341
@@ -15,3 +20,4 @@ display:
       swap_xy: false
       mirror_x: false
       mirror_y: false
+
