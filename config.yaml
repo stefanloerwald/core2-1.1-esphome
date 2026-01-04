@@ -1,0 +1,586 @@
+
+substitutions:
+  devicename: tilty
+  upper_devicename: Tilty
+
+globals:
+  ########################
+  ## USER CONFIGURATION ##
+  ########################  
+  - id: battery_is_charging
+    type: bool
+    restore_value: no
+    initial_value: 'false'
+  - id: current_brightness
+    type: float
+    restore_value: yes
+    initial_value: '0.25'
+
+esphome:
+  name: tilty
+  friendly_name: Tilty
+  platformio_options:
+    upload_speed: 460800
+  on_boot:
+    - priority: 600
+      then:
+        - lambda: ESP_LOGD("booting", "priority 600"); id(axp_id).set_blue_led(true); id(axp_id).update();
+    - priority: 200
+      then:
+        - delay: 500ms
+        - lambda: ESP_LOGD("booting", "priority 200");
+        - light.turn_on: 
+            id: display_backlight
+            brightness: !lambda return id(current_brightness);
+
+
+external_components:
+  - source: github://stefanloerwald/esphome-axp2101
+    components: [ axp2101 ]
+    refresh: 10s
+packages:
+  remote_package_files:
+    url: https://github.com/stefanloerwald/core2-1.1-esphome
+    files:
+      - path: components/platform.yaml
+      - path: components/display.yaml
+        vars:
+          id: main_display
+      - path: components/network.yaml
+      - path: components/deep_sleep.yaml
+        vars:
+          id: deep_sleep_1
+      - path: components/touchscreen.yaml
+        vars:
+          id: touch_screen
+          script_id: on_touch
+          i2c_bus_id: i2c_bus_touch
+    refresh: 1s
+
+
+
+logger:
+  level: DEBUG
+  logs:
+    mpu6886: DEBUG
+    display: DEBUG
+    sensor: DEBUG
+    binary_sensor: DEBUG
+
+api:
+  on_client_connected:
+    - lvgl.widget.show: ${devicename}_hastatus
+    - lvgl.widget.show: toggle_scheduler
+    - lvgl.widget.show: toggle_socket
+    - lvgl.widget.hide: loading
+  on_client_disconnected:
+    - lvgl.widget.hide: ${devicename}_hastatus
+    - lvgl.widget.hide: toggle_scheduler
+    - lvgl.widget.hide: toggle_socket
+    - lvgl.widget.show: loading
+
+ota:
+  - platform: esphome
+    password: ota
+
+i2c:
+  - id: i2c_bus_touch
+    sda: GPIO21
+    scl: GPIO22
+    scan: True
+
+text_sensor:
+  - platform: homeassistant
+    name: "Kettle turn on time"
+    entity_id: input_datetime.kettle_turn_on_time
+    id: kettle_turn_on_time
+    on_value:
+      then:
+        - lvgl.label.update:
+            id: kettle_turn_on_time_label
+            text: !lambda if (!id(kettle_automation_from_ha).state) return "on demand"; return id(kettle_turn_on_time).state.substr(0, 5).c_str();
+            text_color: !lambda |-
+              if (id(kettle_automation_from_ha).state) return lv_color_hex(0x00FF00);
+              return lv_color_hex(0x888888);
+binary_sensor:
+  - platform: template
+    id: kettle_automation_toggle
+    name: Kettle automation toggle
+  - platform: homeassistant
+    entity_id: input_boolean.kettle_automation
+    id: kettle_automation_from_ha
+    on_state:
+      then:
+        - lvgl.label.update:
+            id: kettle_turn_on_time_label
+            text: !lambda if (!id(kettle_automation_from_ha).state) return "on demand"; return id(kettle_turn_on_time).state.substr(0, 5).c_str();
+            text_color: !lambda |-
+              if (id(kettle_automation_from_ha).state) return lv_color_hex(0x00FF00);
+              return lv_color_hex(0x888888);
+        - if:
+            condition:
+              lambda: return id(kettle_automation_from_ha).state;
+            then:
+              - lvgl.widget.show: increment_time_p60
+              - lvgl.widget.show: increment_time_m60
+              - lvgl.widget.show: increment_time_p5
+              - lvgl.widget.show: increment_time_m5
+        - if:
+            condition:
+              lambda: return !id(kettle_automation_from_ha).state;
+            then:
+              - lvgl.widget.hide: increment_time_p60
+              - lvgl.widget.hide: increment_time_m60
+              - lvgl.widget.hide: increment_time_p5
+              - lvgl.widget.hide: increment_time_m5
+  - platform: homeassistant
+    entity_id: switch.kettle_2
+    id: kettle_state
+    on_state:
+      then:
+        - lvgl.label.update:
+            id: kettle_power_label
+            text_color: !lambda |-
+              if (id(kettle_state).state) return lv_color_hex(0x00FF00);
+              return lv_color_hex(0x888888);
+  - platform: touchscreen
+    # Unassigned
+    name: Left Touch Button
+    x_min: 10
+    x_max: 120
+    y_min: 240
+    y_max: 280
+    use_raw: true
+    internal: true
+    on_press: 
+      then:
+        - lambda: |-
+            ESP_LOGD("left touch", "press registered: toggle lcd");
+            id(axp_id).toggle_lcd();
+  - platform: touchscreen
+    # Unassigned
+    name: Middle Touch Button
+    x_min: 130
+    x_max: 200
+    y_min: 240
+    y_max: 280
+    use_raw: true
+    internal: true
+    on_press: 
+      then:
+        - lambda: |-
+            ESP_LOGD("middle touch", "press registered: toggle backlight");
+            id(axp_id).toggle_backlight();
+  - platform: touchscreen
+    # Change brightness
+    name: Right Touch Button
+    id: right_button
+    on_press:
+      then:
+        - lambda: |-
+            static float levels[] = {0.01, 0.05, 0.10, 0.25};
+            float current = id(current_brightness);
+            int idx = 0;
+            // Find the closest level >= current, then step to next
+            for (int i = 0; i < 4; i++) {
+              if (current <= levels[i] + 0.001) { idx = i; break; }
+            }
+            idx = (idx + 1) % 4;
+            id(current_brightness) = levels[idx];
+        - light.turn_on:
+            id: display_backlight
+            brightness: !lambda 'return id(current_brightness);'
+    x_min: 230
+    x_max: 310
+    y_min: 240
+    y_max: 280
+    use_raw: true
+    internal: true
+
+sensor:
+  - platform: axp2101
+    model: M5CORE2
+    address: 0x34
+    id: axp_id
+    i2c_id: i2c_bus_touch
+    update_interval: 10s
+    brightness: 20%
+    battery_voltage:
+      name: "Battery Voltage"
+      id: battery_voltage
+      device_class: Voltage
+      unit_of_measurement: "V"
+      state_class: measurement
+    battery_level:
+      name: "Battery Level"
+      id: battery_level_id
+      device_class: battery
+      unit_of_measurement: "%"
+      state_class: measurement
+      entity_category: diagnostic
+      on_value:
+        - lvgl.label.update:
+            id: battery_status_label
+            text:
+              format: "%0.0f%%"
+              args: [id(battery_level_id).state]
+    battery_charging:
+      name: "Battery Charging"
+      id: battery_charging
+      entity_category: diagnostic
+      on_state:
+        then:
+          - lambda: |-
+              id(battery_is_charging) = x > 0.5;
+          - if:
+              condition:
+                and:
+                  - lvgl.is_paused:
+                  - lambda: 'return id(battery_is_charging) = x > 0.5;'
+              then:
+                - lvgl.resume:
+                - lvgl.widget.redraw:
+                - light.turn_on: display_backlight
+                
+  
+font:
+  - file:
+      type: gfonts
+      family: Roboto
+      weight: 900
+    id: roboto_large
+    size: 36
+    bpp: 4
+  - file:
+      type: gfonts
+      family: Roboto
+      weight: 900
+    id: roboto
+    size: 16
+    bpp: 4
+  - file:
+      type: gfonts
+      family: Roboto
+      weight: 200
+    id: roboto_small
+    size: 14
+
+
+lvgl:
+  touchscreens:
+    touchscreen_id: touch_screen
+  on_idle:
+    - timeout: 10s
+      then:
+    - timeout: 1min
+      then:
+        - light.control:
+            id: display_backlight
+            brightness: 5%
+    - timeout: 2min
+      then:
+        - light.control:
+            id: display_backlight
+            brightness: 1%
+        - delay: 1000ms
+        - lvgl.pause:
+            show_snow: true
+        - delay: 1000ms
+        - light.turn_off: display_backlight
+        - delay: 1000ms
+        - lambda: id(axp_id).set_blue_led(false);
+        - delay: 1000ms
+        - deep_sleep.enter:
+            id: deep_sleep_1
+  on_resume:
+    then:
+      # - lambda: id(axp_id).power_lcd(true);
+      - light.turn_on: 
+          id: display_backlight
+          brightness: !lambda 'return max(id(current_brightness), 0.05f);'
+  top_layer:
+    widgets:
+      - label:
+          text: "\uF1EB"
+          id: ${devicename}_hastatus
+          hidden: true
+          align: top_right
+          x: -8
+          y: 4
+          text_align: right
+          text_color: black
+      - label:
+          text: "XX%"
+          id: battery_status_label
+          hidden: false
+          align: top_left
+          x: 8
+          y: 4
+          text_align: left
+          text_color: black
+          text_font: roboto_small
+  pages:
+    - id: home_page
+      widgets:
+        - obj:
+            id: tilty_page_obj
+            width: 320
+            height: 240
+            align: CENTER
+            border_opa: TRANSP
+            scrollbar_mode: "OFF"
+            scrollable: false
+            pad_all: 0
+            widgets:
+              - label:
+                  id: loading
+                  align: center
+                  text: "Connecting..."
+                  text_font: roboto_large
+                  text_color: black
+              - button:
+                  id: increment_time_p60
+                  align: top_left
+                  translate_x: 11
+                  translate_y: 25
+                  height: 60
+                  width: 100
+                  hidden: true
+                  widgets:
+                    - label:
+                        text: "+1h"
+                        align: center
+                        text_align: center
+                        text_font: roboto_large
+                  on_press:
+                    then:
+                      - homeassistant.action:
+                          action: script.set_new_kettle_turn_on_time
+                          data:
+                            new_time: !lambda
+                              std::string hours_str = id(kettle_turn_on_time).state.substr(0, 2);
+                              std::string minutes_seconds_str = id(kettle_turn_on_time).state.substr(2, 6);
+                              int hours = std::stoi(hours_str);
+                              hours += 1;
+                              if (hours >= 24) {
+                                hours -= 24;
+                              }
+                              if (hours < 10) {
+                                hours_str = "0";
+                              } else {
+                                hours_str = "";
+                              }
+                              hours_str += std::to_string(hours);
+                              return hours_str + minutes_seconds_str;
+              - button:
+                  id: increment_time_m60
+                  align: top_left
+                  translate_x: 11
+                  translate_y: 165
+                  height: 60
+                  width: 100
+                  hidden: true
+                  widgets:
+                    - label:
+                        text: "-1h"
+                        align: center
+                        text_align: center
+                        text_font: roboto_large
+                  on_press:
+                    then:
+                      - homeassistant.action:
+                          action: script.set_new_kettle_turn_on_time
+                          data:
+                            new_time: !lambda
+                              std::string hours_str = id(kettle_turn_on_time).state.substr(0, 2);
+                              std::string minutes_seconds_str = id(kettle_turn_on_time).state.substr(2, 6);
+                              int hours = std::stoi(hours_str);
+                              hours -= 1;
+                              if (hours < 0) {
+                                hours += 24;
+                              }
+                              if (hours < 10) {
+                                hours_str = "0";
+                              } else {
+                                hours_str = "";
+                              }
+                              hours_str += std::to_string(hours);
+                              return hours_str + minutes_seconds_str;
+              - button:
+                  id: increment_time_p5
+                  align: top_left
+                  translate_x: 114
+                  translate_y: 25
+                  height: 60
+                  width: 100
+                  hidden: true
+                  widgets:
+                    - label:
+                        text: "+5m"
+                        align: center
+                        text_align: center
+                        text_font: roboto_large
+                  on_press:
+                    then:
+                      - homeassistant.action:
+                          action: script.set_new_kettle_turn_on_time
+                          data:
+                            new_time: !lambda
+                              std::string hours_str = id(kettle_turn_on_time).state.substr(0, 2);
+                              std::string minutes_str = id(kettle_turn_on_time).state.substr(3, 2);
+                              int minutes = std::stoi(minutes_str);
+                              minutes += 5;
+                              if (minutes >= 60) {
+                                minutes -= 60;
+                                int hours = std::stoi(hours_str);
+                                hours += 1;
+                                if (hours < 10) {
+                                  hours_str = "0";
+                                } else {
+                                  hours_str = "";
+                                }
+                                hours_str += std::to_string(hours);
+                              }
+                              if (minutes < 10) {
+                                minutes_str = "0";
+                              } else {
+                                minutes_str = "";
+                              }
+                              minutes_str += std::to_string(minutes);
+                              return hours_str + ":" + minutes_str + ":00";
+              - button:
+                  id: increment_time_m5
+                  align: top_left
+                  translate_x: 114
+                  translate_y: 165
+                  height: 60
+                  width: 100
+                  hidden: true
+                  widgets:
+                    - label:
+                        text: "-5m"
+                        align: center
+                        text_align: center
+                        text_font: roboto_large
+                  on_press:
+                    then:
+                      - homeassistant.action:
+                          action: script.set_new_kettle_turn_on_time
+                          data:
+                            new_time: !lambda
+                              std::string hours_str = id(kettle_turn_on_time).state.substr(0, 2);
+                              std::string minutes_str = id(kettle_turn_on_time).state.substr(3, 2);
+                              int minutes = std::stoi(minutes_str);
+                              minutes -= 5;
+                              if (minutes < 0) {
+                                minutes += 60;
+                                int hours = std::stoi(hours_str);
+                                hours -= 1;
+                                if (hours < 10) {
+                                  hours_str = "0";
+                                } else {
+                                  hours_str = "";
+                                }
+                                hours_str += std::to_string(hours);
+                              }
+                              if (minutes < 10) {
+                                minutes_str = "0";
+                              } else {
+                                minutes_str = "";
+                              }
+                              minutes_str += std::to_string(minutes);
+                              return hours_str + ":" + minutes_str + ":00";
+              - button:
+                  id: toggle_scheduler
+                  align: top_left
+                  translate_x: 11
+                  translate_y: 95
+                  height: 60
+                  width: 195
+                  hidden: true
+                  widgets:
+                    - label:
+                        text: "HH:MM"
+                        id: kettle_turn_on_time_label
+                        align: center
+                        text_align: center
+                        text_font: roboto_large
+                  on_press:
+                    then:
+                      - lambda: |-
+                          id(kettle_automation_toggle).publish_state(!id(kettle_automation_from_ha).state);
+              - button:
+                  id: toggle_socket
+                  align: top_left
+                  translate_x: 217
+                  translate_y: 25
+                  height: 200
+                  width: 92
+                  hidden: true
+                  widgets:
+                    - label:
+                        text: "\uF011"
+                        id: kettle_power_label
+                        align: center
+                        text_font: montserrat_36
+                        text_align: center
+                  on_press:
+                    then:
+                      - homeassistant.action:
+                          action: script.toggle_kettle_socket_power
+                      
+
+
+light:
+  - platform: monochromatic
+    name: "Display Backlight"
+    id: display_backlight
+    icon: mdi:monitor
+    output: display_output
+    restore_mode: RESTORE_DEFAULT_ON
+    gamma_correct: 1.0
+    initial_state:
+      state: on
+      brightness: 25%
+    default_transition_length: 0ms
+    on_turn_on:
+      then:
+        - lambda: |-
+            float level = id(display_backlight).current_values.get_brightness();
+            id(axp_id).set_lcd_enabled(true);
+            id(axp_id).set_brightness(level);
+            id(main_display).set_update_interval(250);
+            id(axp_id).update();
+    on_turn_off:
+      then:
+        - lambda: |-
+            id(axp_id).set_lcd_enabled(false);
+            id(main_display).set_update_interval(250);
+        # - delay: 1s
+        # - lambda: |-
+        #     id(axp_id).power_lcd(false);
+
+
+output:
+  - platform: template
+    type: float
+    write_action: 
+      then:
+        - lambda: |-
+            id(axp_id).set_brightness(id(display_backlight).current_values.get_brightness());
+            id(axp_id).update();
+    id: display_output
+
+script:
+  - id: on_touch
+    then:
+      - if:
+          condition: lvgl.is_paused
+          then:
+            - lvgl.resume:
+            - lvgl.widget.redraw:
+          else:
+            - lvgl.page.show: home_page
+      - light.turn_on:
+          id: display_backlight
+          brightness: !lambda 'return id(current_brightness);'
