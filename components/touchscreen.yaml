@@ -1,7 +1,8 @@
 
+    
 touchscreen:
   - platform: ft63x6
-    id: touch_screen
-    i2c_id: bus_a
+    id: ${id}
+    i2c_id: ${i2c_bus_id}
     on_touch:
       - script.execute: ${script_id}
