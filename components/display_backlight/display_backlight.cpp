@@ -24,7 +24,7 @@ namespace esphome::display_backlight
         write_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
     }
 
-    void DisplayBacklightComponent::turn_on()
+    void DisplayBacklightComponent::turn_off()
     {
         uint8_t value = 0;
         read_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
