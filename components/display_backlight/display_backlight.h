@@ -16,12 +16,19 @@ namespace esphome
             void toggle();
             void turn_on();
             void turn_off();
-            void set_brightness(float brightness) { brightness_ = brightness; }
+            void set_brightness(float brightness);
 
             void dump_config() override;
 
         private:
             float brightness_;
+
+            inline uint8_t ReadByte(uint8_t address)
+            {
+                uint8_t result;
+                read_byte(address, &result);
+                return result;
+            } 
         };
 
         template <typename... Ts>

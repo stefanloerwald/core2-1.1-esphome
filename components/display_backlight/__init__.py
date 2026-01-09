@@ -15,6 +15,7 @@ DisplayBacklightComponentPtr = DisplayBacklightComponent.operator("ptr")
 TurnOffAction = display_backlight_ns.class_("TurnOffAction", automation.Action)
 TurnOnAction = display_backlight_ns.class_("TurnOnAction", automation.Action)
 ToggleAction = display_backlight_ns.class_("ToggleAction", automation.Action)
+SetBrightnessAction = display_backlight_ns.class_("SetBrightnessAction", automation.Action)
 
 TOGGLE_ACTION_SCHEMA = cv.Schema(
     {
@@ -41,6 +42,23 @@ async def display_backlight_turn_off_to_code(config, action_id, template_arg, ar
     paren = await cg.get_variable(config[CONF_ID])
     return cg.new_Pvariable(action_id, template_arg, paren)
 
+
+@automation.register_action(
+    "display_backlight.set_brightness",
+    SetBrightnessAction,
+    cv.Schema(
+        {
+            cv.Required(CONF_ID): cv.use_id(DisplayBacklightComponent),
+            cv.Required(CONF_BRIGHTNESS): cv.templatable(cv.percentage),
+        }
+    ),
+)
+async def output_set_level_to_code(config, action_id, template_arg, args):
+    paren = await cg.get_variable(config[CONF_ID])
+    var = cg.new_Pvariable(action_id, template_arg, paren)
+    template_ = await cg.templatable(config[CONF_BRIGHTNESS], args, float)
+    cg.add(var.set_brightness(template_))
+    return var
 
 CONFIG_SCHEMA = (
     cv.Schema(
