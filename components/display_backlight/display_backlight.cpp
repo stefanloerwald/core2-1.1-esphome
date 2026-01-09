@@ -19,25 +19,25 @@ namespace esphome::display_backlight
     void DisplayBacklightComponent::turn_on()
     {
         uint8_t value = 0;
-        id(backlight_power).read_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
+        read_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
         value |= Bit(4);
-        id(backlight_power).write_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
+        write_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
     }
 
     void DisplayBacklightComponent::turn_on()
     {
         uint8_t value = 0;
-        id(backlight_power).read_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
+        read_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
         value &= ~Bit(4);
-        id(backlight_power).write_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
+        write_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
     }
 
     void DisplayBacklightComponent::toggle()
     {
         uint8_t value = 0;
-        id(backlight_power).read_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
+        read_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
         value ^= Bit(4);
-        id(backlight_power).write_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
+        write_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
     }
 
 } // esphome::display_backlight
