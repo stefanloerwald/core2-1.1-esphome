@@ -14,11 +14,20 @@ DisplayBacklightComponentPtr = DisplayBacklightComponent.operator("ptr")
 
 TurnOffAction = display_backlight_ns.class_("TurnOffAction", automation.Action)
 TurnOnAction = display_backlight_ns.class_("TurnOnAction", automation.Action)
+TurnAction = display_backlight_ns.class_("TurnAction", automation.Action)
 ToggleAction = display_backlight_ns.class_("ToggleAction", automation.Action)
 
 TOGGLE_ACTION_SCHEMA = cv.Schema(
     {
         cv.GenerateID(): cv.use_id(DisplayBacklightComponent),
+    }
+)
+CONF_ON = "on"
+TURN_ACTION_SCHEMA = cv.Schema(
+    {
+        cv.GenerateID(): cv.use_id(DisplayBacklightComponent),
+        cv.Required(CONF_ON): cv.boolean,
+
     }
 )
 
@@ -38,6 +47,12 @@ async def display_backlight_turn_on_to_code(config, action_id, template_arg, arg
     "display_backlight.turn_off", TurnOffAction, TOGGLE_ACTION_SCHEMA
 )
 async def display_backlight_turn_off_to_code(config, action_id, template_arg, args):
+    paren = await cg.get_variable(config[CONF_ID])
+    return cg.new_Pvariable(action_id, template_arg, paren)
+@automation.register_action(
+    "display_backlight.turn", TurnAction, TURN_ACTION_SCHEMA
+)
+async def display_backlight_turn_to_code(config, action_id, template_arg, args):
     paren = await cg.get_variable(config[CONF_ID])
     return cg.new_Pvariable(action_id, template_arg, paren)
 
