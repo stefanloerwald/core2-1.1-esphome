@@ -28,10 +28,22 @@ namespace esphome
             }
             void set_brightness(float brightness) { brightness_ = brightness; }
 
-            
             void dump_config() override;
+
         private:
             float brightness_;
+        };
+
+        template <typename... Ts>
+        class ToggleAction : public Action<Ts...>
+        {
+        public:
+            ToggleAction(DisplayBacklightComponent *output) : output_(output) {}
+
+            void play(const Ts &...x) override { this->output_->toggle(); }
+
+        protected:
+            DisplayBacklightComponent *output_;
         };
 
     } // namespace display_backlight
