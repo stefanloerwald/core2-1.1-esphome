@@ -41,7 +41,6 @@ CONFIG_SCHEMA = (
         }
     )
     .extend(i2c.i2c_device_schema(0x34))
-    .extend(i2c.i2c)
 )
 
 def to_code(config):
