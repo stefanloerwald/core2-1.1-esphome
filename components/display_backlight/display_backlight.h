@@ -2,13 +2,14 @@
 #define DISPLAY_BACKLIGHT_H_
 
 #include "esphome/components/i2c/i2c.h"
+#include "esphome/core/component.h"
 
 namespace esphome
 {
     namespace display_backlight
     {
 
-        class DisplayBacklightComponent : public i2c::I2CDevice
+        class DisplayBacklightComponent : public PollingComponent, public i2c::I2CDevice
         {
         public:
             void toggle();
@@ -25,6 +26,9 @@ namespace esphome
                     turn_off();
                 }
             }
+            void set_brightness(float brightness) { brightness_ = brightness; }
+        private:
+            float brightness_;
         };
 
     } // namespace display_backlight
