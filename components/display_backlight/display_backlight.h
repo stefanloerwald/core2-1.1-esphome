@@ -2,6 +2,7 @@
 #define DISPLAY_BACKLIGHT_H_
 
 #include "esphome/components/i2c/i2c.h"
+#include "esphome/core/automation.h"
 #include "esphome/core/component.h"
 
 namespace esphome

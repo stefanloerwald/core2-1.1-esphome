@@ -10,6 +10,7 @@ display_backlight_ns = cg.esphome_ns.namespace("display_backlight")
 DisplayBacklightComponent = display_backlight_ns.class_(
     "DisplayBacklightComponent", cg.Component, i2c.I2CDevice
 )
+DisplayBacklightComponentPtr = DisplayBacklightComponent.operator("ptr")
 
 # TurnOffAction = display_backlight_ns.class_("TurnOffAction", automation.Action)
 # TurnOnAction = display_backlight_ns.class_("TurnOnAction", automation.Action)
