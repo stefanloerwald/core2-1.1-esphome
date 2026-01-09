@@ -27,6 +27,12 @@ namespace esphome
                 }
             }
             void set_brightness(float brightness) { brightness_ = brightness; }
+
+            
+            void setup() override;
+            void dump_config() override;
+            float get_setup_priority() const override;
+            void update() override;
         private:
             float brightness_;
         };

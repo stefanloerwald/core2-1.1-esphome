@@ -6,11 +6,13 @@ namespace esphome::display_backlight
 
     namespace
     {
+        static const char *TAG = "display_backlight.sensor";
 
         // Register
         constexpr uint8_t XPOWERS_AXP2101_LDO_ONOFF_CTRL0 = 0x90;
         constexpr uint8_t _bit_0 = 1u;
-        constexpr uint8_t Bit(int which_bit) {
+        constexpr uint8_t Bit(int which_bit)
+        {
             return _bit_0 << which_bit;
         }
 
@@ -38,6 +40,27 @@ namespace esphome::display_backlight
         read_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
         value ^= Bit(4);
         write_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
+    }
+
+    void DisplayBacklightComponent::update()
+    {
+        // No-op
+    }
+
+    void DisplayBacklightComponent::setup()
+    {
+        // No-op
+    }
+
+    void DisplayBacklightComponent::dump_config()
+    {
+        ESP_LOGCONFIG(TAG, "DisplayBacklight");
+        LOG_I2C_DEVICE(this);
+    }
+
+    float DisplayBacklightComponent::get_setup_priority() const
+    {
+        return setup_priority::DATA;
     }
 
 } // esphome::display_backlight
