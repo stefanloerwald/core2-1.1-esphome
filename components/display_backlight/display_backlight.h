@@ -71,9 +71,9 @@ namespace esphome
         public:
             SetBrightnessAction(DisplayBacklightComponent *output) : output_(output) {}
 
-            TEMPLATABLE_VALUE(float, Brightness)
+            TEMPLATABLE_VALUE(float, brightness)
 
-            void play(const Ts &...x) override { this->output_->set_brightness(this->Brightness_.value(x...)); }
+            void play(const Ts &...x) override { this->output_->set_brightness(this->brightness_.value(x...)); }
 
         protected:
             DisplayBacklightComponent *output_;
