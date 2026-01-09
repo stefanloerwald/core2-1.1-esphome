@@ -46,6 +46,28 @@ namespace esphome
         protected:
             DisplayBacklightComponent *output_;
         };
+        template <typename... Ts>
+        class TurnOnAction : public Action<Ts...>
+        {
+        public:
+            TurnOnAction(DisplayBacklightComponent *output) : output_(output) {}
+
+            void play(const Ts &...x) override { this->output_->turn_on(); }
+
+        protected:
+            DisplayBacklightComponent *output_;
+        };
+        template <typename... Ts>
+        class TurnOffAction : public Action<Ts...>
+        {
+        public:
+            TurnOffAction(DisplayBacklightComponent *output) : output_(output) {}
+
+            void play(const Ts &...x) override { this->output_->turn_off(); }
+
+        protected:
+            DisplayBacklightComponent *output_;
+        };
 
     } // namespace display_backlight
 } // namespace esphome
