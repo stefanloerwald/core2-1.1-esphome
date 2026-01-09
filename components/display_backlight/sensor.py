@@ -8,7 +8,7 @@ DEPENDENCIES = ["i2c"]
 
 display_backlight_ns = cg.esphome_ns.namespace("display_backlight")
 DisplayBacklightComponent = display_backlight_ns.class_(
-    "DisplayBacklightComponent", cg.Component, i2c.I2CDevice
+    "DisplayBacklightComponent", cg.PollingComponent, i2c.I2CDevice
 )
 
 # TurnOffAction = display_backlight_ns.class_("TurnOffAction", automation.Action)
