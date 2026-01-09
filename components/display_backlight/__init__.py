@@ -53,7 +53,7 @@ async def display_backlight_turn_off_to_code(config, action_id, template_arg, ar
         }
     ),
 )
-async def output_set_level_to_code(config, action_id, template_arg, args):
+async def display_backlight_set_brightness_to_code(config, action_id, template_arg, args):
     paren = await cg.get_variable(config[CONF_ID])
     var = cg.new_Pvariable(action_id, template_arg, paren)
     template_ = await cg.templatable(config[CONF_BRIGHTNESS], args, float)

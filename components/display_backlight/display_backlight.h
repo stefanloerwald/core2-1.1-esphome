@@ -28,7 +28,7 @@ namespace esphome
                 uint8_t result;
                 read_byte(address, &result);
                 return result;
-            } 
+            }
         };
 
         template <typename... Ts>
@@ -60,6 +60,20 @@ namespace esphome
             TurnOffAction(DisplayBacklightComponent *output) : output_(output) {}
 
             void play(const Ts &...x) override { this->output_->turn_off(); }
+
+        protected:
+            DisplayBacklightComponent *output_;
+        };
+
+        template <typename... Ts>
+        class SetBrightnessAction : public Action<Ts...>
+        {
+        public:
+            SetBrightnessAction(DisplayBacklightComponent *output) : output_(output) {}
+
+            TEMPLATABLE_VALUE(float, Brightness)
+
+            void play(const Ts &...x) override { this->output_->set_Brightness(this->Brightness_.value(x...)); }
 
         protected:
             DisplayBacklightComponent *output_;
