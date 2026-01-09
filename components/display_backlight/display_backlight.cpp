@@ -42,25 +42,10 @@ namespace esphome::display_backlight
         write_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
     }
 
-    void DisplayBacklightComponent::update()
-    {
-        // No-op
-    }
-
-    void DisplayBacklightComponent::setup()
-    {
-        // No-op
-    }
-
     void DisplayBacklightComponent::dump_config()
     {
         ESP_LOGCONFIG(TAG, "DisplayBacklight");
         LOG_I2C_DEVICE(this);
-    }
-
-    float DisplayBacklightComponent::get_setup_priority() const
-    {
-        return setup_priority::DATA;
     }
 
 } // esphome::display_backlight

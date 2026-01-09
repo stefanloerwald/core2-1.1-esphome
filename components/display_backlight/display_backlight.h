@@ -9,7 +9,7 @@ namespace esphome
     namespace display_backlight
     {
 
-        class DisplayBacklightComponent : public PollingComponent, public i2c::I2CDevice
+        class DisplayBacklightComponent : public Component, public i2c::I2CDevice
         {
         public:
             void toggle();
@@ -29,10 +29,7 @@ namespace esphome
             void set_brightness(float brightness) { brightness_ = brightness; }
 
             
-            void setup() override;
             void dump_config() override;
-            float get_setup_priority() const override;
-            void update() override;
         private:
             float brightness_;
         };
