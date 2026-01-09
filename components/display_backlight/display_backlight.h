@@ -73,7 +73,7 @@ namespace esphome
 
             TEMPLATABLE_VALUE(float, Brightness)
 
-            void play(const Ts &...x) override { this->output_->set_Brightness(this->Brightness_.value(x...)); }
+            void play(const Ts &...x) override { this->output_->set_brightness(this->Brightness_.value(x...)); }
 
         protected:
             DisplayBacklightComponent *output_;
