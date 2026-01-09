@@ -16,17 +16,6 @@ namespace esphome
             void toggle();
             void turn_on();
             void turn_off();
-            inline void turn(bool on)
-            {
-                if (on)
-                {
-                    turn_on();
-                }
-                else
-                {
-                    turn_off();
-                }
-            }
             void set_brightness(float brightness) { brightness_ = brightness; }
 
             void dump_config() override;
@@ -67,18 +56,6 @@ namespace esphome
 
         protected:
             DisplayBacklightComponent *output_;
-        };
-        template <typename... Ts>
-        class TurnAction : public Action<Ts...>
-        {
-        public:
-            TurnAction(DisplayBacklightComponent *output, bool on) : output_(output), on_(on) {}
-
-            void play(const Ts &...x) override { this->output_->turn(on_); }
-
-        protected:
-            DisplayBacklightComponent *output_;
-            bool on_;
         };
 
     } // namespace display_backlight
