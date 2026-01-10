@@ -5,6 +5,8 @@
 #include "esphome/core/automation.h"
 #include "esphome/core/component.h"
 
+#include <vector>
+
 namespace esphome
 {
     namespace vibration_motor
@@ -13,7 +15,7 @@ namespace esphome
         class VibrationMotorComponent : public Component, public i2c::I2CDevice
         {
         public:
-            void vibrate(int32_t duration_ms[]);
+            void vibrate(const std::vector<int32_t>& duration_ms);
             void set_level(float level);
 
             void dump_config() override;
@@ -37,7 +39,7 @@ namespace esphome
         public:
             VibrateAction(VibrationMotorComponent *output) : output_(output) {}
 
-            TEMPLATABLE_VALUE(int32_t[], durations_ms)
+            TEMPLATABLE_VALUE(std::vector<int32_t>, durations_ms)
 
             void play(const Ts &...x) override { this->output_->vibrate(durations_ms_); }
 

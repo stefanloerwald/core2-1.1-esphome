@@ -1,6 +1,8 @@
 
 #include "vibration_motor.h"
 
+#include <vector>
+
 namespace esphome::vibration_motor
 {
 
@@ -20,7 +22,7 @@ namespace esphome::vibration_motor
 
     } // anonymous namespace
 
-    void VibrationMotorComponent::vibrate(int32_t durations_ms[])
+    void VibrationMotorComponent::vibrate(const std::vector<int32_t>& durations_ms)
     {
         bool is_vibrate_duration = true;
         for (const int32_t duration_ms : durations_ms)
