@@ -20,7 +20,7 @@ namespace esphome::vibration_motor
 
     } // anonymous namespace
 
-    void VibrationMotorComponent::vibrate(int32_t[] durations_ms)
+    void VibrationMotorComponent::vibrate(int32_t durations_ms[])
     {
         bool is_vibrate_duration = true;
         for (const int32_t duration_ms : duration_ms)
