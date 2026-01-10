@@ -23,7 +23,7 @@ namespace esphome::vibration_motor
     void VibrationMotorComponent::vibrate(int32_t durations_ms[])
     {
         bool is_vibrate_duration = true;
-        for (const int32_t duration_ms : duration_ms)
+        for (const int32_t duration_ms : durations_ms)
         {
             if (is_vibrate_duration)
             {
