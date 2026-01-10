@@ -5,6 +5,7 @@ from esphome.components import i2c
 from esphome.const import CONF_LEVEL, CONF_ID
 
 DEPENDENCIES = ["i2c"]
+CONF_PATTERN = "pattern"
 
 vibration_motor_ns = cg.esphome_ns.namespace("vibration_motor")
 VibrationMotorComponent = vibration_motor_ns.class_(
@@ -18,7 +19,7 @@ SetLevelAction = vibration_motor_ns.class_("SetLevelAction", automation.Action)
 VIBRATE_ACTION_SCHEMA = cv.Schema(
     {
         cv.GenerateID(): cv.use_id(VibrationMotorComponent),
-            cv.Required(CONF_LEVEL): cv.ensure_list(cv.positive_time_period_milliseconds),
+            cv.Required(CONF_PATTERN): cv.ensure_list(cv.positive_time_period_milliseconds),
     }
 )
 
@@ -43,8 +44,8 @@ async def vibration_motor_vibrate_to_code(config, action_id, template_arg, args)
 async def vibration_motor_set_level_to_code(config, action_id, template_arg, args):
     paren = await cg.get_variable(config[CONF_ID])
     var = cg.new_Pvariable(action_id, template_arg, paren)
-    template_ = await cg.templatable(config[CONF_LEVEL], args, float)
-    cg.add(var.set_level(template_))
+    template_ = await cg.templatable(config[CONF_PATTERN], args, list[int])
+    cg.add(var.set_pattern(template_))
     return var
 
 CONFIG_SCHEMA = (
