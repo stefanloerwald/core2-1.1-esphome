@@ -15,7 +15,7 @@ namespace esphome
         class VibrationMotorComponent : public Component, public i2c::I2CDevice
         {
         public:
-            void vibrate(const std::vector<int32_t>& duration_ms);
+            void vibrate(const std::vector<float>& duration_ms);
             void set_level(float level);
 
             void dump_config() override;
