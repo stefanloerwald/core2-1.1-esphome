@@ -41,7 +41,7 @@ namespace esphome
 
             TEMPLATABLE_VALUE(std::vector<int32_t>, durations_ms)
 
-            void play(const Ts &...x) override { this->output_->vibrate(durations_ms_); }
+            void play(const Ts &...x) override { this->output_->vibrate(this->durations_ms_.value(x...)); }
 
         protected:
             VibrationMotorComponent *output_;
