@@ -39,9 +39,9 @@ namespace esphome
         public:
             VibrateAction(VibrationMotorComponent *output) : output_(output) {}
 
-            TEMPLATABLE_VALUE(std::initializer_list<int32_t>, pattern)
+            TEMPLATABLE_VALUE(std::initializer_list<float>, pattern)
 
-            void play(const Ts &...x) override { this->output_->vibrate(std::vector<int32_t>(this->pattern_.value(x...))); }
+            void play(const Ts &...x) override { this->output_->vibrate(std::vector<float>{this->pattern_.value(x...)}); }
 
         protected:
             VibrationMotorComponent *output_;

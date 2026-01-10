@@ -29,7 +29,7 @@ VIBRATE_ACTION_SCHEMA = cv.Schema(
 async def vibration_motor_vibrate_to_code(config, action_id, template_arg, args):
     paren = await cg.get_variable(config[CONF_ID])
     var = cg.new_Pvariable(action_id, template_arg, paren)
-    template_ = await cg.templatable(config[CONF_PATTERN], args, list[int])
+    template_ = await cg.templatable(config[CONF_PATTERN], args, list[float])
     cg.add(var.set_pattern(template_))
     return var
 
