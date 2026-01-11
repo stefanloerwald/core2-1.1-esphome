@@ -19,7 +19,7 @@ SetLevelAction = vibration_motor_ns.class_("SetLevelAction", automation.Action)
 VIBRATE_ACTION_SCHEMA = cv.Schema(
     {
         cv.GenerateID(): cv.use_id(VibrationMotorComponent),
-            cv.Required(CONF_PATTERN): cv.ensure_list(cv.positive_time_period_milliseconds),
+            cv.Required(CONF_PATTERN): cv.templatable(cv.ensure_list(cv.positive_time_period_milliseconds)),
     }
 )
 
