@@ -23,16 +23,31 @@ VIBRATE_ACTION_SCHEMA = cv.Schema(
     }
 )
 
-@automation.register_action(
-    "vibration_motor.vibrate", VibrateAction, VIBRATE_ACTION_SCHEMA
-)
-async def vibration_motor_vibrate_to_code(config, action_id, template_arg, args):
-    paren = await cg.get_variable(config[CONF_ID])
-    var = cg.new_Pvariable(action_id, template_arg, paren)
+# @automation.register_action(
+#     "vibration_motor.vibrate", VibrateAction, VIBRATE_ACTION_SCHEMA
+# )
+# async def vibration_motor_vibrate_to_code(config, action_id, template_arg, args):
+#     paren = await cg.get_variable(config[CONF_ID])
+#     var = cg.new_Pvariable(action_id, template_arg, paren)
+#     template_ = await cg.templatable(config[CONF_PATTERN], args, cg.std_vector.template(cg.int32))
+#     cg.add(var.set_pattern(template_))
+#     return var
+@automation.register_action("vibration_motor.vibrate", VibrateAction, VIBRATE_ACTION_SCHEMA)
+async def vibrate_action_to_code(config, action_id, template_arg, args):
+    # 1. Get the component parent
+    parent = await cg.get_variable(config[CONF_ID])
+    
+    # 2. Instantiate the Action with the template_arg (Ts...)
+    # This matches: class VibrateAction : public Action<Ts...>
+    rhs = VibrateAction.new(template_arg, parent)
+    type_var = await cg.register_component(rhs, config)
+    
+    # 3. Set the templatable pattern
+    # The 'int32_t' here must match your C++ vector type: std::vector<int32_t>
     template_ = await cg.templatable(config[CONF_PATTERN], args, cg.std_vector.template(cg.int32))
-    cg.add(var.set_pattern(template_))
-    return var
-
+    cg.add(type_var.set_pattern(template_))
+    
+    return type_var
 
 @automation.register_action(
     "vibration_motor.set_level",
