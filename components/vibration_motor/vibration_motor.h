@@ -15,7 +15,7 @@ namespace esphome
         class VibrationMotorComponent : public Component, public i2c::I2CDevice
         {
         public:
-            void vibrate(const std::vector<float>& duration_ms);
+            void vibrate(const std::vector<int32_t>& duration_ms);
             void set_level(float level);
 
             void dump_config() override;
@@ -39,9 +39,9 @@ namespace esphome
         public:
             VibrateAction(VibrationMotorComponent *output) : output_(output) {}
 
-            TEMPLATABLE_VALUE(std::initializer_list<float>, pattern)
+            TEMPLATABLE_VALUE(std::vector<int32_t>, pattern)
 
-            void play(const Ts &...x) override { this->output_->vibrate(std::vector<float>{this->pattern_.value(x...)}); }
+            void play(const Ts &...x) override { this->output_->vibrate(this->pattern_.value(x...)); }
 
         protected:
             VibrationMotorComponent *output_;

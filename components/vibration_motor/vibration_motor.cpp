@@ -22,11 +22,11 @@ namespace esphome::vibration_motor
 
     } // anonymous namespace
 
-    void VibrationMotorComponent::vibrate(const std::vector<float>& durations_ms)
+    void VibrationMotorComponent::vibrate(const std::vector<int32_t>& durations_ms)
     {
         ESP_LOGD(TAG, "vibrating, pattern with %d elements");
         bool is_vibrate_duration = true;
-        for (const float duration_ms : durations_ms)
+        for (const int32_t duration_ms : durations_ms)
         {
             if (is_vibrate_duration)
             {
