@@ -40,11 +40,16 @@ async def vibrate_action_to_code(config, action_id, template_arg, args):
     # 2. Instantiate the Action with the template_arg (Ts...)
     # This matches: class VibrateAction : public Action<Ts...>
     var = cg.new_Pvariable(action_id, template_arg, paren)
-    
-    # 3. Set the templatable pattern
-    # The 'int32_t' here must match your C++ vector type: std::vector<int32_t>
-    template_ = await cg.templatable(config[CONF_PATTERN], args, cg.std_vector.template(cg.int32))
-    cg.add(var.set_pattern(template_))
+    # Check if the pattern is a lambda or a raw list
+    if cg.is_template(config[CONF_PATTERN]):
+        # If it's a lambda, we use the standard templatable logic
+        template_ = await cg.templatable(config[CONF_PATTERN], args, cg.std_vector.template(cg.int32))
+        cg.add(var.set_pattern(template_))
+    else:
+        # If it's a static list [100, 200], we MUST wrap it in a std::vector constructor
+        # This converts {100, 200} into std::vector<int32_t>{100, 200} in C++
+        pattern_vec = cg.std_vector.template(cg.int32)(config[CONF_PATTERN])
+        cg.add(var.set_pattern(pattern_vec))
     
     return var
 
