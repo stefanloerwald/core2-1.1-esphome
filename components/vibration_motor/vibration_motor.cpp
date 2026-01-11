@@ -24,7 +24,6 @@ namespace esphome::vibration_motor
 
     void VibrationMotorComponent::vibrate(const std::vector<int32_t>& durations_ms)
     {
-        ESP_LOGD(TAG, "vibrating, pattern with %d elements");
         bool is_vibrate_duration = true;
         for (const int32_t duration_ms : durations_ms)
         {

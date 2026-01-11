@@ -23,22 +23,9 @@ VIBRATE_ACTION_SCHEMA = cv.Schema(
     }
 )
 
-# @automation.register_action(
-#     "vibration_motor.vibrate", VibrateAction, VIBRATE_ACTION_SCHEMA
-# )
-# async def vibration_motor_vibrate_to_code(config, action_id, template_arg, args):
-#     paren = await cg.get_variable(config[CONF_ID])
-#     var = cg.new_Pvariable(action_id, template_arg, paren)
-#     template_ = await cg.templatable(config[CONF_PATTERN], args, cg.std_vector.template(cg.int32))
-#     cg.add(var.set_pattern(template_))
-#     return var
 @automation.register_action("vibration_motor.vibrate", VibrateAction, VIBRATE_ACTION_SCHEMA)
 async def vibrate_action_to_code(config, action_id, template_arg, args):
-    # 1. Get the component parent
     paren = await cg.get_variable(config[CONF_ID])
-    
-    # 2. Instantiate the Action with the template_arg (Ts...)
-    # This matches: class VibrateAction : public Action<Ts...>
     var = cg.new_Pvariable(action_id, template_arg, paren)
     # Check if the pattern is a lambda or a raw list
     if cg.is_template(config[CONF_PATTERN]):
