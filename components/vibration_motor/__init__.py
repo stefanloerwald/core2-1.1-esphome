@@ -27,16 +27,19 @@ VIBRATE_ACTION_SCHEMA = cv.Schema(
 async def vibrate_action_to_code(config, action_id, template_arg, args):
     paren = await cg.get_variable(config[CONF_ID])
     var = cg.new_Pvariable(action_id, template_arg, paren)
-    # Check if the pattern is a lambda or a raw list
-    if cg.is_template(config[CONF_PATTERN]):
-        # If it's a lambda, we use the standard templatable logic
-        template_ = await cg.templatable(config[CONF_PATTERN], args, cg.std_vector.template(cg.int32))
-        cg.add(var.set_pattern(template_))
-    else:
-        # If it's a static list [100, 200], we MUST wrap it in a std::vector constructor
-        # This converts {100, 200} into std::vector<int32_t>{100, 200} in C++
-        pattern_vec = cg.std_vector.template(cg.int32)(config[CONF_PATTERN])
-        cg.add(var.set_pattern(pattern_vec))
+    vec_ = cg.std_vector.template(cg.int32)
+    template_ = await cg.templatable(config[CONF_PATTERN], args, vec_, vec_)
+    cg.add(var.set_pattern(template_))
+    # # Check if the pattern is a lambda or a raw list
+    # if cg.is_template(config[CONF_PATTERN]):
+    #     # If it's a lambda, we use the standard templatable logic
+    #     template_ = await cg.templatable(config[CONF_PATTERN], args, cg.std_vector.template(cg.int32))
+    #     cg.add(var.set_pattern(template_))
+    # else:
+    #     # If it's a static list [100, 200], we MUST wrap it in a std::vector constructor
+    #     # This converts {100, 200} into std::vector<int32_t>{100, 200} in C++
+    #     pattern_vec = cg.std_vector.template(cg.int32)(config[CONF_PATTERN])
+    #     cg.add(var.set_pattern(pattern_vec))
     
     return var
 
