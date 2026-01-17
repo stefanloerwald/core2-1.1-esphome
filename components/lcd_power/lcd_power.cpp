@@ -32,7 +32,7 @@ namespace esphome::lcd_power
         write_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
         // Setting voltage to 3300mV
         constexpr uint8_t targetVoltage_mV = 3300;
-        uint8_t value =  readRegister(XPOWERS_AXP2101_LDO_VOL3_CTRL) & 0xE0;
+        value =  readRegister(XPOWERS_AXP2101_LDO_VOL3_CTRL) & 0xE0;
         value |= (targetVoltage_mV - XPOWERS_AXP2101_ALDO4_VOL_MIN) / XPOWERS_AXP2101_ALDO4_VOL_STEPS;
         writeRegister(XPOWERS_AXP2101_LDO_VOL3_CTRL, &value, 1);
     }
