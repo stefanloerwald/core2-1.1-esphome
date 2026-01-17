@@ -12,8 +12,8 @@ namespace esphome::lcd_power
         constexpr uint8_t XPOWERS_AXP2101_LDO_ONOFF_CTRL0 = 0x90; // For lcd power
         constexpr uint8_t  XPOWERS_AXP2101_LDO_VOL3_CTRL = 0x95; // For lcd voltage
 
-        constexpr uint8_t XPOWERS_AXP2101_ALDO4_VOL_MIN = 500;
-        constexpr uint8_t XPOWERS_AXP2101_ALDO4_VOL_MAX = 3500;
+        constexpr uint8_t XPOWERS_AXP2101_ALDO4_VOL_MIN = 500u;
+        constexpr uint8_t XPOWERS_AXP2101_ALDO4_VOL_MAX = 3500u;
         constexpr uint8_t XPOWERS_AXP2101_ALDO4_VOL_STEPS = 100;
 
         constexpr uint8_t _bit_0 = 1u;
@@ -31,7 +31,7 @@ namespace esphome::lcd_power
         value |= Bit(4);
         write_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
         // Setting voltage to 3300mV
-        constexpr uint8_t targetVoltage_mV = 3300;
+        constexpr uint8_t targetVoltage_mV = 3300u;
         value = 0;
         read_register(XPOWERS_AXP2101_LDO_VOL3_CTRL, &value, 1);
         value &= 0xE0;
