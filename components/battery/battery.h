@@ -15,6 +15,9 @@ namespace esphome
         public:
             void dump_config() override;
             void update() override;
+            inline void set_batteryvoltage_sensor(sensor::Sensor *batteryvoltage_sensor) { batteryvoltage_sensor_ = batteryvoltage_sensor; }
+            inline void set_batterylevel_sensor(sensor::Sensor *batterylevel_sensor) { batterylevel_sensor_ = batterylevel_sensor; }
+            inline void set_batterycharging_bsensor(binary_sensor::BinarySensor *batterycharging_bsensor) { batterycharging_bsensor_ = batterycharging_bsensor; }
 
         protected:
             sensor::Sensor *batteryvoltage_sensor_;
