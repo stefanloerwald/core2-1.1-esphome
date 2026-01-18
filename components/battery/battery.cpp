@@ -10,11 +10,12 @@ namespace esphome::battery
         constexpr uint8_t XPOWERS_AXP2101_ADC_DATA_RELUST1 = 0x35;
         constexpr uint8_t XPOWERS_AXP2101_BAT_PERCENT_DATA = 0xA4;
         constexpr uint8_t XPOWERS_AXP2101_STATUS2 = 0x01;
+        static const char *TAG = "battery.sensor";
     } // namespace
 
     void BatteryComponent::dump_config()
     {
-        ESP_LOGCONFIG(TAG, "AXP2101:");
+        ESP_LOGCONFIG(TAG, "battery state");
         LOG_I2C_DEVICE(this);
         LOG_SENSOR("  ", "Battery Voltage", this->batteryvoltage_sensor_);
         LOG_SENSOR("  ", "Battery Level", this->batterylevel_sensor_);

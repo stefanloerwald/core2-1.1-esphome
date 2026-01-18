@@ -53,6 +53,7 @@ namespace esphome
             uint16_t getBattVoltage();
             bool isBatteryConnected();
             bool isCharging();
+            int getBatteryPercent();
         };
 
     } // namespace battery
