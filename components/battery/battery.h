@@ -36,8 +36,8 @@ namespace esphome
                 }
                 return val & Bit(bit);
             }
-            constexpr uint8_t _bit_0 = 1u;
-            constexpr uint8_t Bit(int which_bit)
+            static constexpr uint8_t _bit_0 = 1u;
+            static constexpr uint8_t Bit(int which_bit)
             {
                 return _bit_0 << which_bit;
             }
