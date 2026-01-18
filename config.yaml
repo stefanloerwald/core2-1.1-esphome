@@ -24,19 +24,22 @@ esphome:
   on_boot:
     - priority: 600
       then:
-        - lambda: ESP_LOGD("booting", "priority 600"); id(axp_id).set_blue_led(true); id(axp_id).update();
+        # Turn on display power
+        - lcd_power.turn_on:
+            id: lcd_power_id
     - priority: 200
       then:
         - delay: 500ms
         - lambda: ESP_LOGD("booting", "priority 200");
         - light.turn_on: 
-            id: display_backlight
+            id: display_backlight_light
             brightness: !lambda return id(current_brightness);
-
+        - display_backlight.turn_on:
+            id: display_backlight_id
 
 external_components:
-  - source: github://stefanloerwald/esphome-axp2101
-    components: [ axp2101 ]
+  - source: github://stefanloerwald/core2-1.1-esphome
+    components: [ display_backlight, vibration_motor, lcd_power, battery ]
     refresh: 10s
 packages:
   remote_package_files:
@@ -49,15 +52,46 @@ packages:
       - path: components/network.yaml
       - path: components/deep_sleep.yaml
         vars:
-          id: deep_sleep_1
+          id: deep_sleep_id
       - path: components/touchscreen.yaml
         vars:
           id: touch_screen
           script_id: on_touch
-          i2c_bus_id: i2c_bus_touch
+          i2c_bus_id: i2c_bus
     refresh: 1s
 
+i2c:
+  - id: i2c_bus
+    sda: GPIO21
+    scl: GPIO22
+    scan: True
 
+sensor:
+  - platform: battery
+    i2c_id: i2c_bus
+    update_interval: 60s
+    battery_voltage:
+      name: "Battery Voltage"
+      id: battery_voltage
+      device_class: Voltage
+      unit_of_measurement: "V"
+      state_class: measurement
+    battery_level:
+      name: "Battery Level"
+      id: battery_level_id
+      device_class: battery
+      unit_of_measurement: "%"
+      state_class: measurement
+      entity_category: diagnostic
+      on_value:
+        - lvgl.label.update:
+            id: battery_status_label
+            text:
+              format: "%0.0f%%"
+              args: [id(battery_level_id).state]
+    battery_charging:
+      name: "Battery Charging"
+      entity_category: diagnostic
 
 logger:
   level: DEBUG
@@ -82,12 +116,6 @@ api:
 ota:
   - platform: esphome
     password: ota
-
-i2c:
-  - id: i2c_bus_touch
-    sda: GPIO21
-    scl: GPIO22
-    scan: True
 
 text_sensor:
   - platform: homeassistant
@@ -154,9 +182,11 @@ binary_sensor:
     internal: true
     on_press: 
       then:
-        - lambda: |-
-            ESP_LOGD("left touch", "press registered: toggle lcd");
-            id(axp_id).toggle_lcd();
+        - vibration_motor.vibrate:
+            id: vibration_motor_id
+            pattern: [40ms]
+        - display_backlight.toggle:
+            id: display_backlight_id
   - platform: touchscreen
     # Unassigned
     name: Middle Touch Button
@@ -168,17 +198,22 @@ binary_sensor:
     internal: true
     on_press: 
       then:
+        - vibration_motor.vibrate:
+            id: vibration_motor_id
+            pattern: [40ms]
         - lambda: |-
-            ESP_LOGD("middle touch", "press registered: toggle backlight");
-            id(axp_id).toggle_backlight();
+            ESP_LOGD("middle touch", "press registered!");
   - platform: touchscreen
     # Change brightness
     name: Right Touch Button
     id: right_button
     on_press:
       then:
+        - vibration_motor.vibrate:
+            id: vibration_motor_id
+            pattern: [40ms]
         - lambda: |-
-            static float levels[] = {0.01, 0.05, 0.10, 0.25};
+            static float levels[] = {0.05, 0.10, 0.25, 0.50};
             float current = id(current_brightness);
             int idx = 0;
             // Find the closest level >= current, then step to next
@@ -187,9 +222,9 @@ binary_sensor:
             }
             idx = (idx + 1) % 4;
             id(current_brightness) = levels[idx];
-        - light.turn_on:
-            id: display_backlight
-            brightness: !lambda 'return id(current_brightness);'
+        - display_backlight.set_brightness:
+            id: display_backlight_id
+            brightness: !lambda return id(current_brightness);
     x_min: 230
     x_max: 310
     y_min: 240
@@ -197,51 +232,18 @@ binary_sensor:
     use_raw: true
     internal: true
 
-sensor:
-  - platform: axp2101
-    model: M5CORE2
-    address: 0x34
-    id: axp_id
-    i2c_id: i2c_bus_touch
-    update_interval: 10s
-    brightness: 20%
-    battery_voltage:
-      name: "Battery Voltage"
-      id: battery_voltage
-      device_class: Voltage
-      unit_of_measurement: "V"
-      state_class: measurement
-    battery_level:
-      name: "Battery Level"
-      id: battery_level_id
-      device_class: battery
-      unit_of_measurement: "%"
-      state_class: measurement
-      entity_category: diagnostic
-      on_value:
-        - lvgl.label.update:
-            id: battery_status_label
-            text:
-              format: "%0.0f%%"
-              args: [id(battery_level_id).state]
-    battery_charging:
-      name: "Battery Charging"
-      id: battery_charging
-      entity_category: diagnostic
-      on_state:
-        then:
-          - lambda: |-
-              id(battery_is_charging) = x > 0.5;
-          - if:
-              condition:
-                and:
-                  - lvgl.is_paused:
-                  - lambda: 'return id(battery_is_charging) = x > 0.5;'
-              then:
-                - lvgl.resume:
-                - lvgl.widget.redraw:
-                - light.turn_on: display_backlight
-                
+vibration_motor:
+  id: vibration_motor_id
+  i2c_id: i2c_bus
+
+display_backlight:
+  id: display_backlight_id
+  i2c_id: i2c_bus
+  brightness: 25%
+
+lcd_power:
+  id: lcd_power_id
+  i2c_id: i2c_bus
   
 font:
   - file:
@@ -275,28 +277,34 @@ lvgl:
     - timeout: 1min
       then:
         - light.control:
-            id: display_backlight
+            id: display_backlight_light
             brightness: 5%
     - timeout: 2min
       then:
         - light.control:
-            id: display_backlight
+            id: display_backlight_light
             brightness: 1%
         - delay: 1000ms
         - lvgl.pause:
             show_snow: true
         - delay: 1000ms
-        - light.turn_off: display_backlight
+        - light.turn_off: display_backlight_light
+        - display_backlight.turn_off:
+            id: display_backlight_id
         - delay: 1000ms
-        - lambda: id(axp_id).set_blue_led(false);
+        # TODO deactivate the LED
         - delay: 1000ms
         - deep_sleep.enter:
-            id: deep_sleep_1
+            id: deep_sleep_id
+        - lcd_power.turn_off:
+            id: lcd_power_id
   on_resume:
     then:
-      # - lambda: id(axp_id).power_lcd(true);
+      # TODO activate the LED again
+      - display_backlight.turn_on:
+          id: display_backlight_id
       - light.turn_on: 
-          id: display_backlight
+          id: display_backlight_light
           brightness: !lambda 'return max(id(current_brightness), 0.05f);'
   top_layer:
     widgets:
@@ -354,6 +362,9 @@ lvgl:
                         text_font: roboto_large
                   on_press:
                     then:
+                      - vibration_motor.vibrate:
+                          id: vibration_motor_id
+                          pattern: [40ms]
                       - homeassistant.action:
                           action: script.set_new_kettle_turn_on_time
                           data:
@@ -388,6 +399,9 @@ lvgl:
                         text_font: roboto_large
                   on_press:
                     then:
+                      - vibration_motor.vibrate:
+                          id: vibration_motor_id
+                          pattern: [40ms]
                       - homeassistant.action:
                           action: script.set_new_kettle_turn_on_time
                           data:
@@ -422,6 +436,9 @@ lvgl:
                         text_font: roboto_large
                   on_press:
                     then:
+                      - vibration_motor.vibrate:
+                          id: vibration_motor_id
+                          pattern: [40ms]
                       - homeassistant.action:
                           action: script.set_new_kettle_turn_on_time
                           data:
@@ -464,6 +481,9 @@ lvgl:
                         text_font: roboto_large
                   on_press:
                     then:
+                      - vibration_motor.vibrate:
+                          id: vibration_motor_id
+                          pattern: [40ms]
                       - homeassistant.action:
                           action: script.set_new_kettle_turn_on_time
                           data:
@@ -507,6 +527,9 @@ lvgl:
                         text_font: roboto_large
                   on_press:
                     then:
+                      - vibration_motor.vibrate:
+                          id: vibration_motor_id
+                          pattern: [40ms]
                       - lambda: |-
                           id(kettle_automation_toggle).publish_state(!id(kettle_automation_from_ha).state);
               - button:
@@ -526,6 +549,9 @@ lvgl:
                         text_align: center
                   on_press:
                     then:
+                      - vibration_motor.vibrate:
+                          id: vibration_motor_id
+                          pattern: [40ms]
                       - homeassistant.action:
                           action: script.toggle_kettle_socket_power
                       
@@ -534,7 +560,7 @@ lvgl:
 light:
   - platform: monochromatic
     name: "Display Backlight"
-    id: display_backlight
+    id: display_backlight_light
     icon: mdi:monitor
     output: display_output
     restore_mode: RESTORE_DEFAULT_ON
@@ -543,22 +569,6 @@ light:
       state: on
       brightness: 25%
     default_transition_length: 0ms
-    on_turn_on:
-      then:
-        - lambda: |-
-            float level = id(display_backlight).current_values.get_brightness();
-            id(axp_id).set_lcd_enabled(true);
-            id(axp_id).set_brightness(level);
-            id(main_display).set_update_interval(250);
-            id(axp_id).update();
-    on_turn_off:
-      then:
-        - lambda: |-
-            id(axp_id).set_lcd_enabled(false);
-            id(main_display).set_update_interval(250);
-        # - delay: 1s
-        # - lambda: |-
-        #     id(axp_id).power_lcd(false);
 
 
 output:
@@ -566,9 +576,7 @@ output:
     type: float
     write_action: 
       then:
-        - lambda: |-
-            id(axp_id).set_brightness(id(display_backlight).current_values.get_brightness());
-            id(axp_id).update();
+        - delay: 1ms
     id: display_output
 
 script:
@@ -582,5 +590,17 @@ script:
           else:
             - lvgl.page.show: home_page
       - light.turn_on:
-          id: display_backlight
+          id: display_backlight_light
           brightness: !lambda 'return id(current_brightness);'
+  - id: toggle_led
+    then: 
+      # This is still broken.
+      - lambda:
+          constexpr uint8_t XPOWERS_AXP2101_CHGLED_SET_CTRL = 0x69;
+          uint8_t value = 0;
+          id(backlight_power).read_register(XPOWERS_AXP2101_CHGLED_SET_CTRL, &value, 1);
+          ESP_LOGD("charging_led", std::to_string(value).c_str());
+          //value &= 0xC8;
+          //value |= 0x05;    //use manual ctrl
+          value ^= (3ull << 4);
+          id(backlight_power).write_register(XPOWERS_AXP2101_CHGLED_SET_CTRL, value);
