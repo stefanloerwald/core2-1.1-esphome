@@ -1,7 +1,9 @@
 #ifndef BATTERY_H_
 #define BATTERY_H_
 
+#include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/i2c/i2c.h"
+#include "esphome/components/sensor/sensor.h"
 #include "esphome/core/component.h"
 
 namespace esphome
@@ -14,8 +16,12 @@ namespace esphome
             void dump_config() override;
             void update() override;
 
-        private:
+        protected:
+            sensor::Sensor *batteryvoltage_sensor_;
+            sensor::Sensor *batterylevel_sensor_;
+            binary_sensor::BinarySensor *batterycharging_bsensor_;
 
+        private:
             inline int readRegister(uint8_t reg)
             {
                 uint8_t val = 0;
