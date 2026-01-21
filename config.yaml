@@ -1,12 +1,8 @@
 
 substitutions:
-  devicename: tilty
-  upper_devicename: Tilty
+  devicename: coffee_manager
 
 globals:
-  ########################
-  ## USER CONFIGURATION ##
-  ########################  
   - id: battery_is_charging
     type: bool
     restore_value: no
@@ -17,8 +13,8 @@ globals:
     initial_value: '0.25'
 
 esphome:
-  name: tilty
-  friendly_name: Tilty
+  name: coffee_manager
+  friendly_name: Coffee Manager
   platformio_options:
     upload_speed: 460800
   on_boot:
@@ -31,16 +27,14 @@ esphome:
       then:
         - delay: 500ms
         - lambda: ESP_LOGD("booting", "priority 200");
-        - light.turn_on: 
-            id: display_backlight_light
-            brightness: !lambda return id(current_brightness);
         - display_backlight.turn_on:
             id: display_backlight_id
+            # brightness: !lambda return id(current_brightness);
 
 external_components:
   - source: github://stefanloerwald/core2-1.1-esphome
     components: [ display_backlight, vibration_motor, lcd_power, battery ]
-    refresh: 10s
+    refresh: 1h
 packages:
   remote_package_files:
     url: https://github.com/stefanloerwald/core2-1.1-esphome
@@ -52,19 +46,24 @@ packages:
       - path: components/network.yaml
       - path: components/deep_sleep.yaml
         vars:
-          id: deep_sleep_id
+          id: deep_sleep_1
       - path: components/touchscreen.yaml
         vars:
           id: touch_screen
           script_id: on_touch
           i2c_bus_id: i2c_bus
-    refresh: 1s
+    refresh: 1h
 
 i2c:
   - id: i2c_bus
     sda: GPIO21
     scl: GPIO22
     scan: True
+
+i2c_device:
+  - id: backlight_power
+    address: 0x34
+    i2c_id: i2c_bus
 
 sensor:
   - platform: battery
@@ -276,26 +275,22 @@ lvgl:
       then:
     - timeout: 1min
       then:
-        - light.control:
-            id: display_backlight_light
+        - display_backlight.set_brightness:
+            id: display_backlight_id
             brightness: 5%
     - timeout: 2min
       then:
-        - light.control:
-            id: display_backlight_light
-            brightness: 1%
         - delay: 1000ms
         - lvgl.pause:
             show_snow: true
         - delay: 1000ms
-        - light.turn_off: display_backlight_light
         - display_backlight.turn_off:
             id: display_backlight_id
         - delay: 1000ms
         # TODO deactivate the LED
         - delay: 1000ms
         - deep_sleep.enter:
-            id: deep_sleep_id
+            id: deep_sleep_1
         - lcd_power.turn_off:
             id: lcd_power_id
   on_resume:
@@ -303,8 +298,8 @@ lvgl:
       # TODO activate the LED again
       - display_backlight.turn_on:
           id: display_backlight_id
-      - light.turn_on: 
-          id: display_backlight_light
+      - display_backlight.set_brightness: 
+          id: display_backlight_id
           brightness: !lambda 'return max(id(current_brightness), 0.05f);'
   top_layer:
     widgets:
@@ -554,22 +549,6 @@ lvgl:
                           pattern: [40ms]
                       - homeassistant.action:
                           action: script.toggle_kettle_socket_power
-                      
-
-
-light:
-  - platform: monochromatic
-    name: "Display Backlight"
-    id: display_backlight_light
-    icon: mdi:monitor
-    output: display_output
-    restore_mode: RESTORE_DEFAULT_ON
-    gamma_correct: 1.0
-    initial_state:
-      state: on
-      brightness: 25%
-    default_transition_length: 0ms
-
 
 output:
   - platform: template
@@ -589,8 +568,8 @@ script:
             - lvgl.widget.redraw:
           else:
             - lvgl.page.show: home_page
-      - light.turn_on:
-          id: display_backlight_light
+      - display_backlight.set_brightness:
+          id: display_backlight_id
           brightness: !lambda 'return id(current_brightness);'
   - id: toggle_led
     then: 
@@ -604,3 +583,11 @@ script:
           //value |= 0x05;    //use manual ctrl
           value ^= (3ull << 4);
           id(backlight_power).write_register(XPOWERS_AXP2101_CHGLED_SET_CTRL, value);
+  - id: turn_off_display_power
+    then: 
+      - lambda:
+          constexpr uint8_t XPOWERS_AXP2101_LDO_ONOFF_CTRL0 = 0x90;
+          uint8_t value = 0;
+          id(backlight_power).read_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
+          value &= ~(1ull << 3);
+          id(backlight_power).write_register(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, &value, 1);
