@@ -1,5 +1,5 @@
 
 esp32:
   board: m5stack-core2
-  framework:
-    type: arduino
+  #framework:
+  #  type: arduino
