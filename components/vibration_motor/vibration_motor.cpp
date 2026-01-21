@@ -30,12 +30,20 @@ namespace esphome::vibration_motor
             if (is_vibrate_duration)
             {
                 turn_on();
+                #ifdef ARDUINO
                 delay(duration_ms);
+                #else
+                vTaskDelay(pdMS_TO_TICKS(duration_ms));
+                #endif
                 turn_off();
             }
             else
             {
+                #ifdef ARDUINO
                 delay(duration_ms);
+                #else
+                vTaskDelay(pdMS_TO_TICKS(duration_ms));
+                #endif
             }
             is_vibrate_duration = !is_vibrate_duration;
         }
@@ -83,3 +91,4 @@ namespace esphome::vibration_motor
     }
 
 } // esphome::vibration_motor
+
