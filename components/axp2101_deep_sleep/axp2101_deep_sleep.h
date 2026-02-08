@@ -44,6 +44,18 @@ namespace esphome
         protected:
             Axp2101DeepSleepComponent *output_;
         };
+
+        template <typename... Ts>
+        class WakeAction : public Action<Ts...>
+        {
+        public:
+            WakeAction(Axp2101DeepSleepComponent *output) : output_(output) {}
+
+            void play(const Ts &...x) override { this->output_->wake(); }
+
+        protected:
+            Axp2101DeepSleepComponent *output_;
+        };
     } // namespace axp2101_deep_sleep
 } // namespace esphome
 
