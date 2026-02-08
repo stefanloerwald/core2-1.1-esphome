@@ -24,12 +24,12 @@ namespace esphome::axp2101_deep_sleep
 
     } // anonymous namespace
 
-    void Axp2101DeepSleepComponent::clrRegisterBit(uint8_t register, int bit)
+    void Axp2101DeepSleepComponent::clrRegisterBit(uint8_t register_id, int bit)
     {
         uint8_t value = 0;
-        read_register(register, &value, 1);
+        read_register(register_id, &value, 1);
         value &= ~Bit(bit);
-        write_register(register, &value, 1);
+        write_register(register_id, &value, 1);
     }
 
     void Axp2101DeepSleepComponent::disableBattDetection()
@@ -86,7 +86,7 @@ namespace esphome::axp2101_deep_sleep
             // Send IRQ wakeup command
             enableWakeup();
 
-            esp_sleep_enable_ext0_wakeup((gpio_num_t )39, LOW); // Core2 V1.1 uses GPIO39 for wakeup on touch.
+            esp_sleep_enable_ext0_wakeup(39, LOW); // Core2 V1.1 uses GPIO39 for wakeup on touch.
             esp_deep_sleep_start();
     }
 
