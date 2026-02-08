@@ -93,7 +93,7 @@ namespace esphome::axp2101_deep_sleep
 
             // Send IRQ wakeup command
             enableWakeup();
-
+            constexpr int LOW = 0;
             esp_sleep_enable_ext0_wakeup((gpio_num_t )39, LOW); // Core2 V1.1 uses GPIO39 for wakeup on touch.
             esp_deep_sleep_start();
     }
