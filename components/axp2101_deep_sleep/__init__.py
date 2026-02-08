@@ -7,16 +7,16 @@ from esphome.const import CONF_ID
 DEPENDENCIES = ["i2c"]
 
 axp2101_deep_sleep_ns = cg.esphome_ns.namespace("axp2101_deep_sleep")
-AXP2101DeepSleepComponent = axp2101_deep_sleep_ns.class_(
-    "AXP2101DeepSleepComponent", cg.Component, i2c.I2CDevice
+Axp2101DeepSleepComponent = axp2101_deep_sleep_ns.class_(
+    "Axp2101DeepSleepComponent", cg.Component, i2c.I2CDevice
 )
-AXP2101DeepSleepComponentPtr = AXP2101DeepSleepComponent.operator("ptr")
+Axp2101DeepSleepComponentPtr = Axp2101DeepSleepComponent.operator("ptr")
 
 SleepAction = axp2101_deep_sleep_ns.class_("SleepAction", automation.Action)
 
 SLEEP_ACTION_SCHEMA = cv.Schema(
     {
-        cv.GenerateID(): cv.use_id(AXP2101DeepSleepComponent),
+        cv.GenerateID(): cv.use_id(Axp2101DeepSleepComponent),
     }
 )
 
@@ -30,7 +30,7 @@ async def axp2101_deep_sleep_sleep_to_code(config, action_id, template_arg, args
 CONFIG_SCHEMA = (
     cv.Schema(
         {
-            cv.GenerateID(): cv.declare_id(AXP2101DeepSleepComponent),
+            cv.GenerateID(): cv.declare_id(Axp2101DeepSleepComponent),
         }
     )
     .extend(i2c.i2c_device_schema(0x34))
