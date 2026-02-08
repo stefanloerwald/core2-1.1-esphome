@@ -16,6 +16,11 @@ namespace esphome::axp2101_deep_sleep
         constexpr uint8_t XPOWERS_AXP2101_DC_ONOFF_DVM_CTRL = 0x80;
         constexpr uint8_t XPOWERS_AXP2101_LDO_ONOFF_CTRL0 = 0x90;
         constexpr uint8_t XPOWERS_AXP2101_LDO_ONOFF_CTRL1 = 0x91;
+        constexpr uint8_t XPOWERS_AXP2101_LDO_VOL1_CTRL = 0x93;
+        constexpr uint8_t XPOWERS_AXP2101_ALDO2_VOL_MIN_DECI_VOLT = 5; // 500mV
+        constexpr uint8_t XPOWERS_AXP2101_ALDO2_VOL_MAX_DECI_VOLT = 35;  // 3500mV
+        constexpr uint8_t XPOWERS_AXP2101_ALDO4_VOL_MIN_DECI_VOLT = 5; // 500mV
+        constexpr uint8_t XPOWERS_AXP2101_ALDO4_VOL_MAX_DECI_VOLT = 35;  // 3500mV
 
         constexpr uint8_t _bit_0 = 1u;
         constexpr uint8_t Bit(int which_bit)
@@ -27,17 +32,27 @@ namespace esphome::axp2101_deep_sleep
 
     void Axp2101DeepSleepComponent::clrRegisterBit(uint8_t register_id, int bit)
     {
-        uint8_t value = 0;
-        read_register(register_id, &value, 1);
+        uint8_t value = readRegister(register_id);
         value &= ~Bit(bit);
-        write_register(register_id, &value, 1);
+        writeRegister(register_id, value);
     }
     void Axp2101DeepSleepComponent::setRegisterBit(uint8_t register_id, int bit)
     {
-        uint8_t value = 0;
-        read_register(register_id, &value, 1);
+        uint8_t value = readRegister(register_id);
         value |= Bit(bit);
-        write_register(register_id, &value, 1);
+        writeRegister(register_id, value);
+    }
+    void Axp2101DeepSleepComponent::setVoltage(uint8_t register_id, uint8_t deciVolt) 
+    {
+        deciVolt = deciVolt < XPOWERS_AXP2101_ALDO2_VOL_MIN_DECI_VOLT ? deciVolt : XPOWERS_AXP2101_ALDO2_VOL_MIN_DECI_VOLT;
+        uint8_t rawVal = readRegister(XPOWERS_AXP2101_LDO_VOL1_CTRL);
+        ESP_LOGD(TAG, "Prior voltage value: %d", rawVal);
+        uint8_t val = rawVal & 0xE0; // Is this superfluous? The voltage control bits are the lower 5 bits, so we clear them to be safe.
+        ESP_LOGD(TAG, "Prior voltage value after anding it: %d", val);
+        ESP_LOGD(TAG, "NOT IMPLEMENTED");
+        // val |= (deciVolt - XPOWERS_AXP2101_ALDO2_VOL_MIN_DECI_VOLT);
+        // writeRegister(XPOWERS_AXP2101_LDO_VOL1_CTRL, val);
+        
     }
 
     void Axp2101DeepSleepComponent::disableBattDetection()
@@ -66,13 +81,13 @@ namespace esphome::axp2101_deep_sleep
         clrRegisterBit(XPOWERS_AXP2101_DC_ONOFF_DVM_CTRL, 3);
         clrRegisterBit(XPOWERS_AXP2101_DC_ONOFF_DVM_CTRL, 4);
         clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 0);
-        clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 1);
-        clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 2);
-        clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 3);
+        //clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 1); // Touch screen. Only turn off on demand, as it is needed for wakeup.
+        clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 2); // Speaker
+        //clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 3); // LCD
         clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 4);
         clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 5);
         clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 6);
-        clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 7);
+        clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 7); // Vibration motor
         clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL1, 0);
     }
     void Axp2101DeepSleepComponent::enablePower()
@@ -82,9 +97,16 @@ namespace esphome::axp2101_deep_sleep
         setRegisterBit(XPOWERS_AXP2101_DC_ONOFF_DVM_CTRL, 3);
         setRegisterBit(XPOWERS_AXP2101_DC_ONOFF_DVM_CTRL, 4);
         setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 0);
-        setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 1);
+        setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 1); // Touch screen
+        setVoltage(XPOWERS_AXP2101_LDO_VOL1_CTRL, 33);
         //setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 2); // Speaker. Only activate on demand
-        setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 3);
+        setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 3); // LCD.
+        constexpr uint8_t targetVoltage_mV = 33u;
+        value = 0;
+        read_register(XPOWERS_AXP2101_LDO_VOL3_CTRL, &value, 1);
+        value &= 0xE0;
+        value |= (targetVoltage_mV - XPOWERS_AXP2101_ALDO4_VOL_MIN);
+        write_register(XPOWERS_AXP2101_LDO_VOL3_CTRL, &value, 1);
         setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 4);
         setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 5);
         setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 6);

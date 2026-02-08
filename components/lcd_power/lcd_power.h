@@ -17,14 +17,6 @@ namespace esphome
             void turn_off();
 
             void dump_config() override;
-
-        private:
-            inline uint8_t ReadByte(uint8_t address)
-            {
-                uint8_t result;
-                read_byte(address, &result);
-                return result;
-            }
         };
 
         template <typename... Ts>

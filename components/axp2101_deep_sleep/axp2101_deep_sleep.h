@@ -30,6 +30,18 @@ namespace esphome
             
             void clrRegisterBit(uint8_t register_id, int bit);
             void setRegisterBit(uint8_t register_id, int bit);
+            void setVoltage(uint8_t register_id, uint8_t deciVolt);
+
+            inline uint8_t readRegister(uint8_t register_id)
+            {
+                uint8_t result;
+                read_register(register_id, &result, 1);
+                return result;
+            }
+            inline void writeRegister(uint8_t register_id, uint8_t value)
+            {
+                write_register(register_id, &value, 1);
+            }
 
         };
 
