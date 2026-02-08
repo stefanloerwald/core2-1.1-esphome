@@ -102,7 +102,7 @@ namespace esphome::axp2101_deep_sleep
         //setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 2); // Speaker. Only activate on demand
         setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 3); // LCD.
         constexpr uint8_t targetVoltage_mV = 33u;
-        value = 0;
+        unit8_t value = 0;
         read_register(XPOWERS_AXP2101_LDO_VOL3_CTRL, &value, 1);
         value &= 0xE0;
         value |= (targetVoltage_mV - XPOWERS_AXP2101_ALDO4_VOL_MIN);
