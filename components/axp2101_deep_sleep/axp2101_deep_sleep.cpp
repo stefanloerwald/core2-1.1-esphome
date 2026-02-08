@@ -1,5 +1,6 @@
 
 #include "axp2101_deep_sleep.h"
+#include "esp_sleep.h"
 
 namespace esphome::axp2101_deep_sleep
 {
@@ -86,7 +87,7 @@ namespace esphome::axp2101_deep_sleep
             // Send IRQ wakeup command
             enableWakeup();
 
-            esp_sleep_enable_ext0_wakeup(39, LOW); // Core2 V1.1 uses GPIO39 for wakeup on touch.
+            esp_sleep_enable_ext0_wakeup((gpio_num_t )39, LOW); // Core2 V1.1 uses GPIO39 for wakeup on touch.
             esp_deep_sleep_start();
     }
 
