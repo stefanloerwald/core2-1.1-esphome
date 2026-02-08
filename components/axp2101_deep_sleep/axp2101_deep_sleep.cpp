@@ -44,6 +44,10 @@ namespace esphome::axp2101_deep_sleep
     {
         clrRegisterBit(XPOWERS_AXP2101_BAT_DET_CTRL, 0);
     }
+    void Axp2101DeepSleepComponent::enableBattDetection()
+    {
+        setRegisterBit(XPOWERS_AXP2101_BAT_DET_CTRL, 0);
+    }
     void Axp2101DeepSleepComponent::disableMeasurements()
     {
         clrRegisterBit(XPOWERS_AXP2101_ADC_CHANNEL_CTRL, 0);
@@ -71,6 +75,22 @@ namespace esphome::axp2101_deep_sleep
         clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 7);
         clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL1, 0);
     }
+    void Axp2101DeepSleepComponent::enablePower()
+    {
+        setRegisterBit(XPOWERS_AXP2101_DC_ONOFF_DVM_CTRL, 1);
+        setRegisterBit(XPOWERS_AXP2101_DC_ONOFF_DVM_CTRL, 2);
+        setRegisterBit(XPOWERS_AXP2101_DC_ONOFF_DVM_CTRL, 3);
+        setRegisterBit(XPOWERS_AXP2101_DC_ONOFF_DVM_CTRL, 4);
+        setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 0);
+        setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 1);
+        setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 2);
+        setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 3);
+        setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 4);
+        setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 5);
+        setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 6);
+        setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 7);
+        setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL1, 0);
+    }
     void Axp2101DeepSleepComponent::enableWakeup()
     {
         setRegisterBit(XPOWERS_AXP2101_SLEEP_WAKEUP_CTRL, 1);
@@ -90,6 +110,28 @@ namespace esphome::axp2101_deep_sleep
 
             // Turn off the power output of other channels
             disablePower();
+
+            // Send IRQ wakeup command
+            // enableWakeup();
+            // constexpr int HIGH = 1;
+            // // esp_sleep_enable_ext0_wakeup((gpio_num_t )39, HIGH); // Core2 V1.1 uses GPIO39 for wakeup on touch.
+            // esp_deep_sleep_start();
+    }
+
+    void Axp2101DeepSleepComponent::wake()
+    {
+
+            // Turn off ADC data monitoring to save power
+            //enableMeasurements();
+            // Enable internal ADC detection
+            enableBattDetection();
+
+
+            // Enable PMU sleep
+            //enableSleep();
+
+            // Turn off the power output of other channels
+            enablePower();
 
             // Send IRQ wakeup command
             // enableWakeup();

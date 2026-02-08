@@ -13,6 +13,7 @@ namespace esphome
         class Axp2101DeepSleepComponent : public Component, public i2c::I2CDevice
         {
         public:
+            void wake();
             void sleep();
 
             void dump_config() override;
@@ -20,8 +21,11 @@ namespace esphome
         private:
             void disableBattDetection();
             void disableMeasurements();
+            void enableBattDetection();
+            void enableMeasurements();
             void enableSleep();
             void disablePower();
+            void enablePower();
             void enableWakeup();
             
             void clrRegisterBit(uint8_t register_id, int bit);

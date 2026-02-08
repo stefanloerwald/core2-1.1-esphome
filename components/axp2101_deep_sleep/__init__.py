@@ -13,6 +13,7 @@ Axp2101DeepSleepComponent = axp2101_deep_sleep_ns.class_(
 Axp2101DeepSleepComponentPtr = Axp2101DeepSleepComponent.operator("ptr")
 
 SleepAction = axp2101_deep_sleep_ns.class_("SleepAction", automation.Action)
+WakeAction = axp2101_deep_sleep_ns.class_("WakeAction", automation.Action)
 
 SLEEP_ACTION_SCHEMA = cv.Schema(
     {
@@ -24,6 +25,12 @@ SLEEP_ACTION_SCHEMA = cv.Schema(
     "axp2101_deep_sleep.sleep", SleepAction, SLEEP_ACTION_SCHEMA
 )
 async def axp2101_deep_sleep_sleep_to_code(config, action_id, template_arg, args):
+    paren = await cg.get_variable(config[CONF_ID])
+    return cg.new_Pvariable(action_id, template_arg, paren)
+@automation.register_action(
+    "axp2101_deep_sleep.wake", WakeAction, SLEEP_ACTION_SCHEMA
+)
+async def axp2101_deep_sleep_wake_to_code(config, action_id, template_arg, args):
     paren = await cg.get_variable(config[CONF_ID])
     return cg.new_Pvariable(action_id, template_arg, paren)
 
