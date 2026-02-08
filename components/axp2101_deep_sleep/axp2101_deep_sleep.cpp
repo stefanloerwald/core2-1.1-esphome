@@ -83,12 +83,12 @@ namespace esphome::axp2101_deep_sleep
         setRegisterBit(XPOWERS_AXP2101_DC_ONOFF_DVM_CTRL, 4);
         setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 0);
         setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 1);
-        setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 2);
+        //setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 2); // Speaker. Only activate on demand
         setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 3);
         setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 4);
         setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 5);
         setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 6);
-        setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 7);
+        //setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 7); // Vibration motor. Only activate on demand
         setRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL1, 0);
     }
     void Axp2101DeepSleepComponent::enableWakeup()
