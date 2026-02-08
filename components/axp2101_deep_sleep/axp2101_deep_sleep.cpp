@@ -17,6 +17,7 @@ namespace esphome::axp2101_deep_sleep
         constexpr uint8_t XPOWERS_AXP2101_LDO_ONOFF_CTRL0 = 0x90;
         constexpr uint8_t XPOWERS_AXP2101_LDO_ONOFF_CTRL1 = 0x91;
         constexpr uint8_t XPOWERS_AXP2101_LDO_VOL1_CTRL = 0x93;
+        constexpr uint8_t XPOWERS_AXP2101_LDO_VOL3_CTRL = 0x95;
         constexpr uint8_t XPOWERS_AXP2101_ALDO2_VOL_MIN_DECI_VOLT = 5; // 500mV
         constexpr uint8_t XPOWERS_AXP2101_ALDO2_VOL_MAX_DECI_VOLT = 35;  // 3500mV
         constexpr uint8_t XPOWERS_AXP2101_ALDO4_VOL_MIN_DECI_VOLT = 5; // 500mV
