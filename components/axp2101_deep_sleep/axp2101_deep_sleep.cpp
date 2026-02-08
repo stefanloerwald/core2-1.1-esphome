@@ -32,6 +32,13 @@ namespace esphome::axp2101_deep_sleep
         value &= ~Bit(bit);
         write_register(register_id, &value, 1);
     }
+    void Axp2101DeepSleepComponent::setRegisterBit(uint8_t register_id, int bit)
+    {
+        uint8_t value = 0;
+        read_register(register_id, &value, 1);
+        value |= Bit(bit);
+        write_register(register_id, &value, 1);
+    }
 
     void Axp2101DeepSleepComponent::disableBattDetection()
     {

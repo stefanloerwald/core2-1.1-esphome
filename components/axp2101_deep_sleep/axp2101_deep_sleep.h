@@ -24,7 +24,8 @@ namespace esphome
             void disablePower();
             void enableWakeup();
             
-            void clrRegisterBit(uint8_t register, int bit);
+            void clrRegisterBit(uint8_t register_id, int bit);
+            void setRegisterBit(uint8_t register_id, int bit);
 
         };
 
