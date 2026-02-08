@@ -55,7 +55,7 @@ namespace esphome::axp2101_deep_sleep
     void Axp2101DeepSleepComponent::disableDC3()
     {
         clrRegisterBit(XPOWERS_AXP2101_DC_ONOFF_DVM_CTRL, 2);
-    }`
+    }
     void Axp2101DeepSleepComponent::disableDC4()
     {
         clrRegisterBit(XPOWERS_AXP2101_DC_ONOFF_DVM_CTRL, 3);
