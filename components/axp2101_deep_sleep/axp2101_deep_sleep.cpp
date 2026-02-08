@@ -24,80 +24,43 @@ namespace esphome::axp2101_deep_sleep
 
     } // anonymous namespace
 
-    void Axp2101DeepSleepComponent::disableTemperatureMeasure()
+    void Axp2101DeepSleepComponent::clrRegisterBit(uint8_t register, int bit)
     {
-        clrRegisterBit(XPOWERS_AXP2101_ADC_CHANNEL_CTRL, 4);
+        uint8_t value = 0;
+        read_register(register, &value, 1);
+        value &= ~Bit(bit);
+        write_register(register, &value, 1);
     }
+
     void Axp2101DeepSleepComponent::disableBattDetection()
     {
         clrRegisterBit(XPOWERS_AXP2101_BAT_DET_CTRL, 0);
     }
-    void Axp2101DeepSleepComponent::disableVbusVoltageMeasure()
-    {
-        clrRegisterBit(XPOWERS_AXP2101_ADC_CHANNEL_CTRL, 2);
-    }
-    void Axp2101DeepSleepComponent::disableBattVoltageMeasure()
+    void Axp2101DeepSleepComponent::disableMeasurements()
     {
         clrRegisterBit(XPOWERS_AXP2101_ADC_CHANNEL_CTRL, 0);
-    }
-    void Axp2101DeepSleepComponent::disableSystemVoltageMeasure()
-    {
+        clrRegisterBit(XPOWERS_AXP2101_ADC_CHANNEL_CTRL, 2);
         clrRegisterBit(XPOWERS_AXP2101_ADC_CHANNEL_CTRL, 3);
+        clrRegisterBit(XPOWERS_AXP2101_ADC_CHANNEL_CTRL, 4);
     }
     void Axp2101DeepSleepComponent::enableSleep()
     {
         setRegisterBit(XPOWERS_AXP2101_SLEEP_WAKEUP_CTRL, 0);
     }
-    void Axp2101DeepSleepComponent::disableDC2()
+    void Axp2101DeepSleepComponent::disablePower()
     {
         clrRegisterBit(XPOWERS_AXP2101_DC_ONOFF_DVM_CTRL, 1);
-    }
-    void Axp2101DeepSleepComponent::disableDC3()
-    {
         clrRegisterBit(XPOWERS_AXP2101_DC_ONOFF_DVM_CTRL, 2);
-    }
-    void Axp2101DeepSleepComponent::disableDC4()
-    {
         clrRegisterBit(XPOWERS_AXP2101_DC_ONOFF_DVM_CTRL, 3);
-    }
-    void Axp2101DeepSleepComponent::disableDC5()
-    {
         clrRegisterBit(XPOWERS_AXP2101_DC_ONOFF_DVM_CTRL, 4);
-    }
-    void Axp2101DeepSleepComponent::disableALDO1()
-    {
         clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 0);
-    }
-    void Axp2101DeepSleepComponent::disableALDO2()
-    {
         clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 1);
-    }
-    void Axp2101DeepSleepComponent::disableALDO3()
-    {
         clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 2);
-    }
-    void Axp2101DeepSleepComponent::disableALDO4()
-    {
         clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 3);
-    }
-    void Axp2101DeepSleepComponent::disableBLDO1()
-    {
         clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 4);
-    }
-    void Axp2101DeepSleepComponent::disableBLDO2()
-    {
         clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 5);
-    }
-    void Axp2101DeepSleepComponent::disableCPUSLDO()
-    {
         clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 6);
-    }
-    void Axp2101DeepSleepComponent::disableDLDO1()
-    {
         clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL0, 7);
-    }
-    void Axp2101DeepSleepComponent::disableDLDO2()
-    {
         clrRegisterBit(XPOWERS_AXP2101_LDO_ONOFF_CTRL1, 0);
     }
     void Axp2101DeepSleepComponent::enableWakeup()
@@ -109,31 +72,16 @@ namespace esphome::axp2101_deep_sleep
     {
 
             // Turn off ADC data monitoring to save power
-            disableTemperatureMeasure();
+            disableMeasurements();
             // Enable internal ADC detection
             disableBattDetection();
-            disableVbusVoltageMeasure();
-            disableBattVoltageMeasure();
-            disableSystemVoltageMeasure();
 
 
             // Enable PMU sleep
             enableSleep();
 
             // Turn off the power output of other channels
-            disableDC2();
-            disableDC3();
-            disableDC4();
-            disableDC5();
-            disableALDO1();
-            disableALDO2();
-            disableALDO3();
-            disableALDO4();
-            disableBLDO1();
-            disableBLDO2();
-            disableCPUSLDO();
-            disableDLDO1();
-            disableDLDO2();
+            disablePower();
 
             // Send IRQ wakeup command
             enableWakeup();

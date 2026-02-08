@@ -18,12 +18,14 @@ namespace esphome
             void dump_config() override;
 
         private:
-            inline uint8_t ReadByte(uint8_t address)
-            {
-                uint8_t result;
-                read_byte(address, &result);
-                return result;
-            }
+            void disableBattDetection();
+            void disableMeasurements();
+            void enableSleep();
+            void disablePower();
+            void enableWakeup();
+            
+            void clrRegisterBit(uint8_t register, int bit);
+
         };
 
         template <typename... Ts>
